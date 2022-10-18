@@ -9,3 +9,6 @@
 # 项目配置
 在Config填写相关规则
 
+# 用到的相关命令
+## rsync
+rsync -avzP -e "ssh -i ~/sshkey.pem" ubuntu@xx.xxx.xx.xxx:Projects/sample.csv ~/sample.csv
