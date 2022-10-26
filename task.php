@@ -40,7 +40,7 @@ class task{
 
             self::log('* 同步代码到服务器', $statusfile);
             // --delete比较危险，确认没问题再使用
-            self::exec("rsync -av --progress --delete --bwlimit=500 {$path}{$project['name']}{$project['sourcedir']} {$project['targetuser']}@{$config['targethost']}:{$config['targetdir']}");
+            self::exec("rsync -av --progress --delete --bwlimit=500 {$path}{$project['name']}{$project['sourcedir']} {$project['targetuser']}@{$project['targethost']}:{$project['targetdir']}");
             // self::exec("rsync -av --progress --bwlimit=500 {$path}{$config['name']}{$config['sourcedir']} {$config['targetuser']}@{$config['targethost']}:{$config['targetdir']}");
             unlink($lockfile);
             self::log('* 项目处理运行结束', $statusfile);
@@ -50,7 +50,7 @@ class task{
     }
 
     public static function finish(\Swoole\Server $server, int $task_id, mixed $data){
-        echo $task_id."运行结束".PHP_EOL;
+        echo "task:".$task_id."运行结束".PHP_EOL;
     }
 
     public static function log($str = '', $logfile = 'build.txt')

@@ -3,7 +3,7 @@
 include_once "task.php";
 // 初始化配置
 $config = include_once "config.php";
-task::$project = include_once "project.php";
+$project = task::$project = include_once "project.php";
 task::$gitpath = realpath(__DIR__).'/git/';
 $server = new \Swoole\Http\Server("0.0.0.0", 9501, \SWOOLE_BASE);
 $server->set([
@@ -20,7 +20,7 @@ $server->set([
 ]);
 $server->on('Task', 'task::add');
 $server->on('Finish', 'task::finish');
-$server->on('Request', function ($request, $response) use ($server, $config) {
+$server->on('Request', function ($request, $response) use ($server, $config, $project) {
     $uri = $request->server['request_uri'];
     $uri = trim($uri, '/');
     if($uri == 'favicon.ico')
@@ -28,13 +28,13 @@ $server->on('Request', function ($request, $response) use ($server, $config) {
         $response->write('ico'); 
         return true;
     }
-    if(!isset($request->header['frontbuild_authorization']))
+    if(!isset($request->header['authorization']))
     {
         $response->status('401', 'Unauthorized');
         $response->header('WWW-Authenticate', 'Basic realm="My passport"');
         return true;
     }else{
-        $authorization = $request->header['frontbuild_authorization'];
+        $authorization = $request->header['authorization'];
         $authorization = str_replace("Basic ", "" , $authorization);
         $authorization = base64_decode($authorization);
         $passport = explode(":", $authorization);
@@ -68,7 +68,81 @@ $server->on('Request', function ($request, $response) use ($server, $config) {
         $response->write("<pre>");
         $response->write($content);  
     }elseif($action == ''){
-        $content = file_get_contents(realpath(__DIR__).'/index.html');
+
+        $content = '
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="canonical" href="https://getbootstrap.com/docs/3.4/examples/justified-nav/">
+    <title>前端构建系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/@bootcss/v3.bootcss.com@1.0.25/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@bootcss/v3.bootcss.com@1.0.25/assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@bootcss/v3.bootcss.com@1.0.25/examples/justified-nav/justified-nav.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@bootcss/v3.bootcss.com@1.0.25/assets/js/ie-emulation-modes-warning.js"></script>
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <h3 class="text-muted">前端构建系统</h3>
+        <nav>
+          <ul class="nav nav-justified">
+            <li class="active"><a href="#">Home</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="jumbotron">
+        <h1>front CI/CD</h1>
+        <p class="lead">frontshow,前端构建系统</p>
+        <p><a class="btn btn-lg btn-success" href="#" role="button">Get started！</a></p>
+      </div>
+      ';
+        //闭合开关
+        $j = 0;
+        $i = 0;
+        foreach($project as $proid => $proj){
+            if($i % 3 == 0){
+                if($j == 1){
+                    $content .= '</div>
+            <div class="row">';
+                    $j = 0;
+                }else{
+                    $content .= '<div class="row">';
+                    $j = 1;
+                }
+            }
+            // 内容正文
+            $content .= '
+            <div class="col-lg-4">
+            <h2>'.$proj['projectname'].'</h2>
+            <p class="text-danger">'.$proj['url'].'</p>
+            <p>'.$proj['description'].'</p>
+            <p>
+                <a class="btn btn-primary" href="/build/'.$proid.'" role="button">构建 &raquo;</a>&nbsp;
+                <a class="btn btn-success" href="/status/'.$proid.'" role="button">详情 &raquo;</a>
+            </p>
+            </div>';
+            $i++;
+        }
+        if($j == 1){
+            $content .= '</div>';
+        }
+      $content .= '
+      <footer class="footer">
+        <p>&copy; frontshow</p>
+      </footer>
+    </div> <!-- /container -->
+  </body>
+</html>';
+        // $content = file_get_contents(realpath(__DIR__).'/index.html');
         $response->write($content);
         return true;
     }

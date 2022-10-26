@@ -3,11 +3,29 @@
 
 # 所需环境
 1. php 8.0.3 (需要swoole扩展)
-2. node.js
+2. node.js (npm)
 3. git
 
 # 项目配置
-在Config填写相关规则
+config.php是web页面的登录账号
+project.php是程序的项目
+```PHP
+return [
+    // 项目1
+    1000 => [
+        'projectname' => '测试',
+        'description' => '测试',
+        'name' => 'frontweb',
+        'git' => 'git@gitee.com:test/test.git',
+        'url' => 'http://test.cn',
+        'sourcedir' => '/dist/',
+        'targethost' => '127.0.0.1',
+        'targetuser' => 'www-data',
+        'targetdir' => '/test/web',
+    ],
+    
+];
+```
 
 # 用到的相关命令
 ## rsync
