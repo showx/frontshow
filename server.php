@@ -1,5 +1,6 @@
 #!/usr/local/bin/php
 <?php
+require '/path/to/sdk/vendor/autoload.php';
 include_once "task.php";
 // 初始化配置
 $config = include_once "config.php";
