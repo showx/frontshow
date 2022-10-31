@@ -30,3 +30,6 @@ return [
 # 用到的相关命令
 ## rsync
 rsync -avzP -e "ssh -i ~/sshkey.pem" ubuntu@xx.xxx.xx.xxx:Projects/sample.csv ~/sample.csv
+
+## cos
+https://cloud.tencent.com/document/product/436/12266

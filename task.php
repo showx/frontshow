@@ -2,6 +2,61 @@
 class task{
     public static $project = [];
     public static $gitpath;
+    
+    public static $cos_secretId = "";
+    public static $cos_secretKey = "";
+    public static $cos_region = "ap-guangzhou";
+    public static $cos_bucket = "";
+
+    public static function cosupload($key, $path){
+
+        $secretId = self::$cos_secretId;
+        $secretKey = self::$cos_secretKey;
+        $cosClient = new Qcloud\Cos\Client(
+            array(
+                'region' => self::$cos_region,
+                'schema' => 'https', //协议头部，默认为http
+                'credentials'=> array(
+                    'secretId'  => $secretId ,
+                    'secretKey' => $secretKey)));
+
+
+        try {
+            $bucket = self::$cos_bucket;
+            $srcPath = $path;
+            $file = fopen($srcPath, "rb");
+            if ($file) {
+                $result = $cosClient->putObject(array(
+                    'Bucket' => $bucket,
+                    'Key' => $key,
+                    'Body' => $file));
+                print_r($result);
+            }
+        } catch (\Exception $e) {
+            echo "$e\n";
+        }
+    }
+
+    // 列出文件并上传
+    public static function list_dir($dir, $projectdir){
+        $dirfile = scan_dir($dir);
+        foreach($dirfile as $file){
+            if($file == '..' || $file == '.'){
+                continue;
+            }
+            $filename = $dir."/".$file;
+            if(is_dir($filename)){
+                self::list_dir($filename);
+            }else{
+                // 对文件进行cos上传
+                $filekey = str_replace($projectdir, '' ,$filename);
+                slef::cosupload($filekey, $filename);
+            }
+            
+        }
+    }
+
+    // 添加任务
     public static function add(\Swoole\Server $server, $task_id, $worker_id, $data){
         $id = $data['id'];
         $lockfile = realpath(__DIR__)."/lock/{$id}.txt";
@@ -39,8 +94,12 @@ class task{
             self::exec("cd {$path}{$project['name']} && npm run build");
 
             self::log('* 同步代码到服务器', $statusfile);
+
+            $sourcedir = $path.$project['name'].$project['sourcedir'];
+            list_dir($sourcedir, $path.$project['name']);
+
             // --delete比较危险，确认没问题再使用
-            self::exec("rsync -av --progress --delete --bwlimit=500 {$path}{$project['name']}{$project['sourcedir']} {$project['targetuser']}@{$project['targethost']}:{$project['targetdir']}");
+            // self::exec("rsync -av --progress --delete --bwlimit=500 {$path}{$project['name']}{$project['sourcedir']} {$project['targetuser']}@{$project['targethost']}:{$project['targetdir']}");
             // self::exec("rsync -av --progress --bwlimit=500 {$path}{$config['name']}{$config['sourcedir']} {$config['targetuser']}@{$config['targethost']}:{$config['targetdir']}");
             unlink($lockfile);
             self::log('* 项目处理运行结束', $statusfile);
