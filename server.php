@@ -1,11 +1,14 @@
 #!/usr/local/bin/php
 <?php
-require '/path/to/sdk/vendor/autoload.php';
+require 'vendor/autoload.php';
 include_once "task.php";
 // 初始化配置
 $config = include_once "config.php";
 $project = task::$project = include_once "project.php";
 task::$gitpath = realpath(__DIR__).'/git/';
+task::$cos_secretId = $config['cos']['secretid'];
+task::$cos_secretKey = $config['cos']['secretkey'];
+task::$cos_bucket = $config['cos']['bucket'];
 $server = new \Swoole\Http\Server("0.0.0.0", 9501, \SWOOLE_BASE);
 $server->set([
     'daemonize' => 0,

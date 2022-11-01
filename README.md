@@ -33,3 +33,13 @@ rsync -avzP -e "ssh -i ~/sshkey.pem" ubuntu@xx.xxx.xx.xxx:Projects/sample.csv ~/
 
 ## cos
 https://cloud.tencent.com/document/product/436/12266
+
+#### todolist
+1. 增加ssh不询问 
+echo 'Host *
+   StrictHostKeyChecking no
+   UserKnownHostsFile=/dev/null' > /etc/ssh/ssh_config
+2. 列出每个文件cos上传情况
+
+#### 注意事项
+1. 上传到cos，前端使用vue只能使用hash模式。

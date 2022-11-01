@@ -38,7 +38,7 @@ class task{
     }
 
     // 列出文件并上传
-    public static function list_dir($dir, $projectdir){
+    public static function list_dir($dir, $projectdir, $targetdir){
         $dirfile = scan_dir($dir);
         foreach($dirfile as $file){
             if($file == '..' || $file == '.'){
@@ -46,11 +46,12 @@ class task{
             }
             $filename = $dir."/".$file;
             if(is_dir($filename)){
-                self::list_dir($filename);
+                self::list_dir($filename, $projectdir, $targetdir);
             }else{
                 // 对文件进行cos上传
-                $filekey = str_replace($projectdir, '' ,$filename);
-                slef::cosupload($filekey, $filename);
+                $filekey = $targetdir.str_replace($projectdir, '' ,$filename);
+                echo $filename.PHP_EOL;
+                self::cosupload($filekey, $filename);
             }
             
         }
@@ -96,7 +97,7 @@ class task{
             self::log('* 同步代码到服务器', $statusfile);
 
             $sourcedir = $path.$project['name'].$project['sourcedir'];
-            list_dir($sourcedir, $path.$project['name']);
+            self::list_dir($sourcedir, $sourcedir, $project['targetdir']);
 
             // --delete比较危险，确认没问题再使用
             // self::exec("rsync -av --progress --delete --bwlimit=500 {$path}{$project['name']}{$project['sourcedir']} {$project['targetuser']}@{$project['targethost']}:{$project['targetdir']}");
