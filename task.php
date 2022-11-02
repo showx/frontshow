@@ -8,7 +8,7 @@ class task{
     public static $cos_region = "ap-guangzhou";
     public static $cos_bucket = "";
 
-    public static function cosupload($key, $path){
+    public static function cosupload($key, $path, $statusfile){
 
         $secretId = self::$cos_secretId;
         $secretKey = self::$cos_secretKey;
@@ -31,6 +31,7 @@ class task{
                     'Key' => $key,
                     'Body' => $file));
                 print_r($result);
+                self::log('* 已上传文件:'.$key, $statusfile);
             }
         } catch (\Exception $e) {
             echo "$e\n";
@@ -38,20 +39,20 @@ class task{
     }
 
     // 列出文件并上传
-    public static function list_dir($dir, $projectdir, $targetdir){
-        $dirfile = scan_dir($dir);
+    public static function list_dir($dir, $projectdir, $targetdir, $statusfile){
+        $dirfile = scandir($dir);
         foreach($dirfile as $file){
             if($file == '..' || $file == '.'){
                 continue;
             }
             $filename = $dir."/".$file;
             if(is_dir($filename)){
-                self::list_dir($filename, $projectdir, $targetdir);
+                self::list_dir($filename, $projectdir, $targetdir, $statusfile);
             }else{
                 // 对文件进行cos上传
                 $filekey = $targetdir.str_replace($projectdir, '' ,$filename);
                 echo $filename.PHP_EOL;
-                self::cosupload($filekey, $filename);
+                self::cosupload($filekey, $filename, $statusfile);
             }
             
         }
@@ -97,7 +98,7 @@ class task{
             self::log('* 同步代码到服务器', $statusfile);
 
             $sourcedir = $path.$project['name'].$project['sourcedir'];
-            self::list_dir($sourcedir, $sourcedir, $project['targetdir']);
+            self::list_dir($sourcedir, $sourcedir, $project['targetdir'], $statusfile);
 
             // --delete比较危险，确认没问题再使用
             // self::exec("rsync -av --progress --delete --bwlimit=500 {$path}{$project['name']}{$project['sourcedir']} {$project['targetuser']}@{$project['targethost']}:{$project['targetdir']}");
