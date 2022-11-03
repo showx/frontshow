@@ -11,6 +11,7 @@
 # 项目配置
 config.php是web页面的登录账号
 project.php是程序的项目
+使用docker需把/frontshow/conf映射到本地，达到后面动态加载配置
 ```PHP
 return [
     // 项目1
@@ -31,7 +32,8 @@ return [
 配置好config.php(主要腾讯云cos的配置)和project.php(项目git地址与目标文件夹)，使用docker构建一下
 ```
 docker build -t frontshow:v1 .
-docker run -it -d -p 9501:9501 --name frontshow frontshow:v1
+# docker run -it -d -p 9501:9501 --name frontshow frontshow:v1
+docker run -it -d -p 9501:9501 -v //d/code/conf:/frontshow/conf --name frontshow frontshow:v1
 ```
 浏览器输入localhost:9501即可构建
 

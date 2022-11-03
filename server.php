@@ -3,8 +3,8 @@
 require 'vendor/autoload.php';
 include_once "task.php";
 // 初始化配置
-$config = include_once "config.php";
-$project = task::$project = include_once "project.php";
+$config = include_once "conf/config.php";
+$project = task::$project = include_once "conf/project.php";
 task::$gitpath = realpath(__DIR__).'/git/';
 task::$cos_secretId = $config['cos']['secretid'];
 task::$cos_secretKey = $config['cos']['secretkey'];
