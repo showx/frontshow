@@ -7,14 +7,23 @@ class task{
     public static $cos_secretKey = "";
     public static $cos_region = "ap-guangzhou";
     public static $cos_bucket = "";
+    public static $othercos = [];
 
-    public static function cosupload($key, $path, $statusfile){
-
-        $secretId = self::$cos_secretId;
-        $secretKey = self::$cos_secretKey;
+    public static function cosupload($key, $path, $statusfile, $cosdata){
+        // 暂时指定广州
+        $region = self::$cos_region;
+        if(!empty($cosdata)){
+            $bucket = $cosdata['bucket'];
+            $secretId = $cosdata['secretid'];
+            $secretKey = $cosdata['secretkey'];
+        }else{
+            $bucket = self::$cos_bucket;
+            $secretId = self::$cos_secretId;
+            $secretKey = self::$cos_secretKey;
+        }
         $cosClient = new Qcloud\Cos\Client(
             array(
-                'region' => self::$cos_region,
+                'region' => $region,
                 'schema' => 'https', //协议头部，默认为http
                 'credentials'=> array(
                     'secretId'  => $secretId ,
@@ -22,7 +31,6 @@ class task{
 
 
         try {
-            $bucket = self::$cos_bucket;
             $srcPath = $path;
             $file = fopen($srcPath, "rb");
             if ($file) {
@@ -39,7 +47,7 @@ class task{
     }
 
     // 列出文件并上传
-    public static function list_dir($dir, $projectdir, $targetdir, $statusfile){
+    public static function list_dir($dir, $projectdir, $targetdir, $statusfile, $cosdata){
         $dirfile = scandir($dir);
         foreach($dirfile as $file){
             if($file == '..' || $file == '.'){
@@ -47,12 +55,12 @@ class task{
             }
             $filename = $dir."/".$file;
             if(is_dir($filename)){
-                self::list_dir($filename, $projectdir, $targetdir, $statusfile);
+                self::list_dir($filename, $projectdir, $targetdir, $statusfile, $cosdata);
             }else{
                 // 对文件进行cos上传
                 $filekey = $targetdir.str_replace($projectdir, '' ,$filename);
                 echo $filename.PHP_EOL;
-                self::cosupload($filekey, $filename, $statusfile);
+                self::cosupload($filekey, $filename, $statusfile, $cosdata);
             }
             
         }
@@ -98,7 +106,14 @@ class task{
             self::log('* 同步代码到服务器', $statusfile);
 
             $sourcedir = $path.$project['name'].$project['sourcedir'];
-            self::list_dir($sourcedir, $sourcedir, $project['targetdir'], $statusfile);
+            if(isset($project['cos'])){
+                if(isset(self::$othercos[$project['cos']])){
+                    $cosdata = self::$othercos[$project['cos']];
+                }else{
+                    $cosdata = [];
+                }
+            }
+            self::list_dir($sourcedir, $sourcedir, $project['targetdir'], $statusfile, $cosdata);
 
             // --delete比较危险，确认没问题再使用
             // self::exec("rsync -av --progress --delete --bwlimit=500 {$path}{$project['name']}{$project['sourcedir']} {$project['targetuser']}@{$project['targethost']}:{$project['targetdir']}");

@@ -9,6 +9,7 @@ task::$gitpath = realpath(__DIR__).'/git/';
 task::$cos_secretId = $config['cos']['secretid'];
 task::$cos_secretKey = $config['cos']['secretkey'];
 task::$cos_bucket = $config['cos']['bucket'];
+task::$othercos = $config['othercos'];
 $server = new \Swoole\Http\Server("0.0.0.0", 9501, \SWOOLE_BASE);
 $server->set([
     'daemonize' => 0,

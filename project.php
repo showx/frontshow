@@ -9,6 +9,7 @@ return [
         'url' => 'http://test.cn',
         'sourcedir' => '/dist/',
         'targetdir' => '/win/',
+        'cos' => ''
     ],
     
 ];
